@@ -1,10 +1,10 @@
 package server;
 
 public interface DB {
-    public boolean addEvent();
-    public boolean removeEvent();
-    public boolean listEventAvailability();
-    public boolean bookEvent(String clientID, String eventID);
-    public boolean getBookingSchedule();
-    public boolean cancelEvent();
+    public boolean addEvent(String eventID, String eventType, int bookingCapacity);
+    public boolean removeEvent(String eventID, String eventType);
+    public boolean listEventAvailability(String eventType);
+    public boolean bookEvent(String customerID, String eventID, String eventType);
+    public boolean getBookingSchedule(String customerID);
+    public boolean cancelEvent(String customerID, String eventID);
 }
