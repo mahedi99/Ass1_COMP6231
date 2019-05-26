@@ -11,6 +11,7 @@ import java.net.SocketException;
 
 public class MtlServer {
     MtlDBController controller = new MtlDBController();
+
     public static void main(String[] args) {
 
         MtlServer mtlServer = new MtlServer();
@@ -31,9 +32,9 @@ public class MtlServer {
                 String[] data = new String(request.getData()).split(" "); //data = "customerID eventID eventType"
 
                 switch (data[2]){
-                    case Utils.BOOK_EVENT:
+                    case Utils.ADD_EVENT:
                         //OtwDBController.bookEvent(data[0], data[1]);
-
+                        //controller.addEvent(data[0], data[1], );
                         break;
                     case Utils.CANCEL_EVENT :
                         break;
