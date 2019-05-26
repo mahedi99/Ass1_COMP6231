@@ -1,12 +1,19 @@
 package server.MtlServer;
 
+import rmi.RMIInterfaceImpl;
 import server.Utils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 
 public class MtlServer {
@@ -14,10 +21,39 @@ public class MtlServer {
 
     public static void main(String[] args) {
 
-        MtlServer mtlServer = new MtlServer();
-        //Establishing connection between servers
-        mtlServer.receive();
+        InputStreamReader is = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(is);
+        String portNum, registryURL;
+        try{
+            startRegistry(5000);
+            RMIInterfaceImpl exportedObj = new RMIInterfaceImpl();
+            registryURL = "rmi://localhost:" + 5000 + "/server";
+            Naming.rebind(registryURL, exportedObj);
+            System.out.println("Hello Server ready.");
+        }
+        catch (Exception re) {
+            System.out.println("Exception in HelloServer.main: " + re);
+        }
+    }
 
+    // This method starts a RMI registry on the local host, if it
+    // does not already exists at the specified port number.
+    private static void startRegistry(int RMIPortNum)
+            throws RemoteException{
+        try {
+            Registry registry = LocateRegistry.getRegistry(RMIPortNum);
+            registry.list();
+        }
+        catch (RemoteException e) {
+            // No valid registry at that port.
+            /**/     System.out.println
+/**/        ("RMI registry cannot be located at port "
+        /**/        + RMIPortNum);
+            Registry registry =
+                    LocateRegistry.createRegistry(RMIPortNum);
+            /**/        System.out.println(
+                    /**/           "RMI registry created at port " + RMIPortNum);
+        }
     }
 
     private void receive(){
