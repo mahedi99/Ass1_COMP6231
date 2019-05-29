@@ -1,6 +1,10 @@
 package client;
 
-import rmi.RMIInterface;
+import server.rmi.RMIInterface;
+import server.database.EventType;
+import server.database.MessageModel;
+import server.database.RequestType;
+
 import java.rmi.Naming;
 
 public class CustomerClient {
@@ -11,9 +15,16 @@ public class CustomerClient {
             // find the remote object and cast it to an interface object
             RMIInterface h = (RMIInterface) Naming.lookup(registryURL);
             // invoke the remote method
-            String message = h.getData("hi");
+
+            MessageModel model = new MessageModel();
+            model.setClientID("TORC2345");
+            model.setEventID("MTLE100519");
+            model.setEventType(EventType.CONFERENCE);
+            model.setRequestType(RequestType.ADD_EVENT);
+
+            String message = h.processRequest(model);
             System.out.println(message);
-        } // end try
+        }
         catch (Exception e) {
             System.out.println("Exception in HelloClient: " + e);
         }

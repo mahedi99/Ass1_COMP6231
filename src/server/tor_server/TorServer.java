@@ -1,4 +1,4 @@
-package server.OtwServer;
+package server.tor_server;
 
 import server.Utils;
 
@@ -7,8 +7,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.lang.*;
 
-public class OtwServer {
+public class TorServer {
+
     public static void main(String[] args) {
 
 
@@ -27,6 +29,7 @@ public class OtwServer {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
+                java.lang.String s = new java.lang.String(request.getData());
                 //replay back after processing the request
                 DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
                 aSocket.send(reply);

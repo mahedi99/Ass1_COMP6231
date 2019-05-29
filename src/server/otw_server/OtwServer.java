@@ -1,22 +1,49 @@
-package server.TorServer;
+package server.otw_server;
 
 import server.Utils;
+import server.rmi.OtwRMIInterfaceImpl;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
-public class TorServer {
-
+public class OtwServer {
     public static void main(String[] args) {
 
+        new Thread(() -> {
+            receive();
+        }).start();
 
+        try{
+            startRegistry(5001);
+            OtwRMIInterfaceImpl exportedObj = new OtwRMIInterfaceImpl();
+            String registryURL = "rmi://localhost:" + 5001 + "/server";
+            Naming.rebind(registryURL, exportedObj);
+            System.out.println("Server ready.");
+        }
+        catch (Exception re) {
+            System.out.println("Exception in HelloServer.main: " + re);
+        }
+    }
 
-
-        //Establishing connection between servers
-        receive();
+    private static void startRegistry(int RMIPortNum)
+            throws RemoteException {
+        try {
+            Registry registry = LocateRegistry.getRegistry(RMIPortNum);
+            registry.list();
+        }
+        catch (RemoteException e) {
+            // No valid registry at that port.
+            /**/     System.out.println("RMI registry cannot be located at port " + RMIPortNum);
+                    LocateRegistry.createRegistry(RMIPortNum);
+            /**/        System.out.println("RMI registry created at port " + RMIPortNum);
+        }
     }
 
     private static void receive(){

@@ -1,7 +1,8 @@
-package server.TorServer;
+package server.tor_server;
 
-import server.DB;
-import server.EventDetails;
+import server.database.DB;
+import server.database.EventDetails;
+import server.database.EventType;
 
 import java.util.HashMap;
 
@@ -11,22 +12,22 @@ public class TorDBController implements DB {
 
 
     @Override
-    public boolean addEvent(String eventID, String eventType, int bookingCapacity) {
+    public boolean addEvent(String eventID, EventType eventType, int bookingCapacity) {
         return false;
     }
 
     @Override
-    public boolean removeEvent(String eventID, String eventType) {
+    public boolean removeEvent(String eventID, EventType eventType) {
         return false;
     }
 
     @Override
-    public boolean listEventAvailability(String eventType) {
+    public boolean listEventAvailability(EventType eventType) {
         return false;
     }
 
     @Override
-    public boolean bookEvent(String customerID, String eventID, String eventType) {
+    public boolean bookEvent(String customerID, String eventID, EventType eventType) {
         return false;
     }
 
