@@ -11,32 +11,32 @@ public class OtwDBController implements DB {
     private static HashMap<String, HashMap<String, EventDetails>> database = new HashMap<>();
 
     @Override
-    public boolean addEvent(String eventID, EventType eventType, int bookingCapacity) {
-        return false;
+    public String addEvent(String eventID, EventType eventType, int bookingCapacity) {
+        return "";
     }
 
     @Override
-    public boolean removeEvent(String eventID, EventType eventType) {
-        return false;
+    public String removeEvent(String eventID, EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean listEventAvailability(EventType eventType) {
-        return false;
+    public String listEventAvailability(EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean bookEvent(String customerID, String eventID, EventType eventType) {
-        return false;
+    public String bookEvent(String customerID, String eventID, EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean getBookingSchedule(String customerID) {
-        return false;
+    public String getBookingSchedule(String customerID) {
+        return "";
     }
 
     @Override
-    public boolean cancelEvent(String customerID, String eventID) {
-        return false;
+    public String cancelEvent(String customerID, String eventID) {
+        return "";
     }
 }

@@ -18,18 +18,18 @@ public class MtlRMIInterfaceImpl extends UnicastRemoteObject implements RMIInter
         System.out.println(model.getEventType());
         System.out.println(model.getEventID());
 
-        boolean isSuccessful = false;
+        String response = "false";
         MtlDBController controller = MtlDBController.getInstance();
         switch (model.getRequestType()) {
             case ADD_EVENT:
-                isSuccessful = controller.addEvent(model.getEventID(), model.getEventType(), model.getBookingCapacity());
+                response = controller.addEvent(model.getEventID(), model.getEventType(), model.getBookingCapacity());
                 break;
             case BOOK_EVENT:
-                isSuccessful = controller.bookEvent(model.getEventID(), model.getEventID(), model.getEventType());
+                response = controller.bookEvent(model.getClientID(), model.getEventID(), model.getEventType());
                 break;
         }
 
 
-        return "" + isSuccessful;
+        return response;
     }
 }

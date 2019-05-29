@@ -17,10 +17,11 @@ public class CustomerClient {
             // invoke the remote method
 
             MessageModel model = new MessageModel();
-            model.setClientID("TORC2345");
+            model.setClientID("MTLC2345");
             model.setEventID("MTLE100519");
             model.setEventType(EventType.CONFERENCE);
             model.setRequestType(RequestType.ADD_EVENT);
+            model.setBookingCapacity(50);
 
             String message = h.processRequest(model);
             System.out.println(message);

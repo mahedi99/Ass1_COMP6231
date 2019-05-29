@@ -4,13 +4,14 @@ import server.Utils;
 import server.database.DB;
 import server.database.EventDetails;
 import server.database.EventType;
+import server.database.RequestType;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MtlDBController implements DB {
 
-    private static final Map<EventType, ConcurrentHashMap<String, EventDetails>> DATABASE = new ConcurrentHashMap<>();
+    private static Map<EventType, ConcurrentHashMap<String, EventDetails>> database = new ConcurrentHashMap<>();
 
     private static MtlDBController instance;
     private MtlDBController(){
@@ -24,55 +25,61 @@ public class MtlDBController implements DB {
     }
 
     @Override
-    public boolean addEvent(String eventID, EventType eventType, int bookingCapacity) {
-        switch (eventID.substring(0, 2)){
+    public String addEvent(String eventID, EventType eventType, int bookingCapacity) {
+        String response = "false";
+        switch (eventID.substring(0, 3)){
             case "MTL" :
                 EventDetails eventDetails = new EventDetails();
                 eventDetails.bookingCapacity = bookingCapacity;
 
-                ConcurrentHashMap<String, EventDetails> tmpEvent = DATABASE.putIfAbsent(eventType, new ConcurrentHashMap<>());
-                if(!tmpEvent.containsKey(eventID)){
-                    DATABASE.get(eventType).putIfAbsent(eventID, eventDetails);
-                    return true;
+                if (!database.containsKey(eventType)){
+                    database.put(eventType, new ConcurrentHashMap<>());
+                }
+                if(!database.get(eventType).containsKey(eventID)){
+                    database.get(eventType).putIfAbsent(eventID, eventDetails);
+                    response =  "true";
                 }
                 else {
-                    EventDetails details = DATABASE.get(eventType).get(eventID);
+                    EventDetails details = database.get(eventType).get(eventID);
                     details.bookingCapacity = bookingCapacity;
-                    DATABASE.get(eventType).put(eventID, eventDetails);
+                    database.get(eventType).put(eventID, eventDetails);
+                    response = "Event already exists, capacity updated";
                 }
                 break;
             case "TOR" :
-                String UDPMsg = eventID + "|" + eventType + "|" + bookingCapacity;
-                MtlServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
+                String UDPMsg = RequestType.ADD_EVENT + "|" + eventID + "|" + eventType + "|" + bookingCapacity;
+                response = MtlServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
                 break;
             case "OTW" :
+                String UDPMsg2 = RequestType.ADD_EVENT + "|" + eventID + "|" + eventType + "|" + bookingCapacity;
+                response = MtlServer.sendMsg(Utils.OTW_SERVER_PORT, UDPMsg2);
                 break;
         }
-        return false;
+        return response;
     }
 
     @Override
-    public boolean removeEvent(String eventID, EventType eventType) {
-        return false;
+    public String removeEvent(String eventID, EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean listEventAvailability(EventType eventType) {
-        return false;
+    public String listEventAvailability(EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean bookEvent(String customerID, String eventID, EventType eventType) {
-        return false;
+    public String bookEvent(String customerID, String eventID, EventType eventType) {
+        return "";
     }
 
     @Override
-    public boolean getBookingSchedule(String customerID) {
-        return false;
+    public String getBookingSchedule(String customerID) {
+        return "";
     }
 
     @Override
-    public boolean cancelEvent(String customerID, String eventID) {
-        return false;
+    public String cancelEvent(String customerID, String eventID) {
+        return "";
     }
 }

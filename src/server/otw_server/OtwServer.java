@@ -1,6 +1,7 @@
 package server.otw_server;
 
 import server.Utils;
+import server.rmi.MtlRMIInterfaceImpl;
 import server.rmi.OtwRMIInterfaceImpl;
 
 import java.io.IOException;
@@ -21,14 +22,15 @@ public class OtwServer {
         }).start();
 
         try{
-            startRegistry(5001);
-            OtwRMIInterfaceImpl exportedObj = new OtwRMIInterfaceImpl();
-            String registryURL = "rmi://localhost:" + 5001 + "/server";
+            Utils.startRegistry(Utils.OTW_SERVER_PORT);
+            MtlRMIInterfaceImpl exportedObj = new MtlRMIInterfaceImpl();
+            String registryURL = "rmi://localhost:" + Utils.OTW_SERVER_PORT + "/server";
             Naming.rebind(registryURL, exportedObj);
-            System.out.println("Server ready.");
+            System.out.println("Ottawa Server ready.");
+            //listRegistry(registryURL);
         }
         catch (Exception re) {
-            System.out.println("Exception in HelloServer.main: " + re);
+            System.out.println("Exception in OtwServer.main: " + re);
         }
     }
 

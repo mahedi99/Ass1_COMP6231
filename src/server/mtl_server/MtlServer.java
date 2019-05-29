@@ -1,18 +1,16 @@
 package server.mtl_server;
 
 import server.Utils;
+import server.database.RequestType;
 import server.rmi.MtlRMIInterfaceImpl;
 
 import java.io.IOException;
 import java.net.*;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 
 public class MtlServer {
-    //MtlDBController controller = new MtlDBController();
 
     public static void main(String[] args) {
 
@@ -21,37 +19,18 @@ public class MtlServer {
         }).start();
 
         try{
-            startRegistry(Utils.MTL_SERVER_PORT);
+            Utils.startRegistry(Utils.MTL_SERVER_PORT);
             MtlRMIInterfaceImpl exportedObj = new MtlRMIInterfaceImpl();
             String registryURL = "rmi://localhost:" + Utils.MTL_SERVER_PORT + "/server";
             Naming.rebind(registryURL, exportedObj);
-            System.out.println("Hello Server ready.");
+            System.out.println("Montreal Server ready.");
             //listRegistry(registryURL);
         }
         catch (Exception re) {
-            System.out.println("Exception in HelloServer.main: " + re);
+            System.out.println("Exception in MtlServer.main: " + re);
         }
     }
 
-    // This method starts a RMI registry on the local host, if it
-    // does not already exists at the specified port number.
-    private static void startRegistry(int RMIPortNum)
-            throws RemoteException{
-        try {
-            Registry registry = LocateRegistry.getRegistry(RMIPortNum);
-            registry.list();
-        }
-        catch (RemoteException e) {
-            // No valid registry at that port.
-            /**/     System.out.println
-/**/        ("RMI registry cannot be located at port "
-        /**/        + RMIPortNum);
-            Registry registry =
-                    LocateRegistry.createRegistry(RMIPortNum);
-            /**/        System.out.println(
-                    /**/           "RMI registry created at port " + RMIPortNum);
-        }
-    }
     private static void listRegistry(String registryURL)
             throws RemoteException, MalformedURLException {
         System.out.println("Registry " + registryURL + " contains: ");
@@ -69,14 +48,14 @@ public class MtlServer {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
-                String[] data = new String(request.getData()).split(" "); //data = "customerID eventID eventType"
+                String[] data = new String(request.getData()).split("\\|"); //data = "customerID eventID eventType"
 
-                switch (data[2]){
-                    case Utils.ADD_EVENT:
+                switch (RequestType.valueOf(data[2])){
+                    case ADD_EVENT:
                         //OtwDBController.bookEvent(data[0], data[1]);
                         //controller.addEvent(data[0], data[1], );
                         break;
-                    case Utils.CANCEL_EVENT :
+                    case BOOK_EVENT :
                         break;
                 }
 
@@ -96,7 +75,8 @@ public class MtlServer {
                 aSocket.close();
         }
     }
-    public static void sendMsg(int serverPort, String UDPMsg){
+    public static String sendMsg(int serverPort, String UDPMsg){
+        String response = "false";
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket();
@@ -112,6 +92,7 @@ public class MtlServer {
             aSocket.receive(reply);
             System.out.println("Reply received from the server with port number " + serverPort + " is: "
                     + new String(reply.getData()));
+            response = new String(reply.getData()).trim();
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {
@@ -120,5 +101,6 @@ public class MtlServer {
             if (aSocket != null)
                 aSocket.close();
         }
+        return response;
     }
 }
