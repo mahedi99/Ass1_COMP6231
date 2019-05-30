@@ -79,7 +79,7 @@ public class MtlDBController implements DB {
     }
 
     @Override
-    public String cancelEvent(String customerID, String eventID) {
+    public String cancelEvent(String customerID, String eventID, EventType eventType) {
         return "";
     }
 }

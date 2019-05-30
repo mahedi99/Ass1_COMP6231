@@ -5,6 +5,7 @@ import server.database.EventDetails;
 import server.database.EventType;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TorDBController implements DB {
@@ -35,6 +36,7 @@ public class TorDBController implements DB {
 
                 EventDetails eventDetails = new EventDetails();
                 eventDetails.bookingCapacity = bookingCapacity;
+                eventDetails.eventID = eventID;
 
                 //ConcurrentHashMap<String, EventDetails> tmpEvent = database.putIfAbsent(eventType, new ConcurrentHashMap<>());
                 if (!database.containsKey(eventType)){
@@ -67,7 +69,18 @@ public class TorDBController implements DB {
     public String listEventAvailability(EventType eventType) {
         return "";
     }
-
+    public String listEventAvailabilityForOthers(EventType eventType){
+        String response = "";
+        if (database.containsKey(eventType)){
+            ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+            Set<String> keys = allEvents.keySet();
+            for (String tmpKey : keys){
+                EventDetails tmpEvent = allEvents.get(tmpKey);
+                response = response + tmpEvent.eventID + " " + tmpEvent.spaceAvailable() + "|";
+            }
+        }
+        return response;
+    }
     @Override
     public String bookEvent(String customerID, String eventID, EventType eventType) {
         return "";
@@ -79,7 +92,7 @@ public class TorDBController implements DB {
     }
 
     @Override
-    public String cancelEvent(String customerID, String eventID) {
+    public String cancelEvent(String customerID, String eventID, EventType eventType) {
         return "";
     }
 }

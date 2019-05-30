@@ -54,6 +54,9 @@ public class TorServer {
                     case ADD_EVENT:
                         response = controller.addEvent(data[1], EventType.valueOf(data[2]), Integer.parseInt(data[3].trim()));
                         break;
+                    case LIST_EVENT_AVAILABILITY:
+                        response = controller.listEventAvailabilityForOthers(EventType.valueOf(data[1].trim()));
+                        break;
                     case BOOK_EVENT:
                         response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3]));
                         break;
