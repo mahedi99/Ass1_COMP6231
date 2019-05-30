@@ -1,11 +1,10 @@
-package server.MtlServer;
+package server.otw_server;
 
-import rmi.RMIInterfaceImpl;
 import server.Utils;
+import server.rmi.MtlRMIInterfaceImpl;
+import server.rmi.OtwRMIInterfaceImpl;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -15,48 +14,41 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-
-public class MtlServer {
-    MtlDBController controller = new MtlDBController();
-
+public class OtwServer {
     public static void main(String[] args) {
 
-        InputStreamReader is = new InputStreamReader(System.in);
-        BufferedReader br = new BufferedReader(is);
-        String portNum, registryURL;
+        new Thread(() -> {
+            receive();
+        }).start();
+
         try{
-            startRegistry(5000);
-            RMIInterfaceImpl exportedObj = new RMIInterfaceImpl();
-            registryURL = "rmi://localhost:" + 5000 + "/server";
+            Utils.startRegistry(Utils.OTW_SERVER_PORT);
+            MtlRMIInterfaceImpl exportedObj = new MtlRMIInterfaceImpl();
+            String registryURL = "rmi://localhost:" + Utils.OTW_SERVER_PORT + "/server";
             Naming.rebind(registryURL, exportedObj);
-            System.out.println("Hello Server ready.");
+            System.out.println("Ottawa Server ready.");
+            //listRegistry(registryURL);
         }
         catch (Exception re) {
-            System.out.println("Exception in HelloServer.main: " + re);
+            System.out.println("Exception in OtwServer.main: " + re);
         }
     }
 
-    // This method starts a RMI registry on the local host, if it
-    // does not already exists at the specified port number.
     private static void startRegistry(int RMIPortNum)
-            throws RemoteException{
+            throws RemoteException {
         try {
             Registry registry = LocateRegistry.getRegistry(RMIPortNum);
             registry.list();
         }
         catch (RemoteException e) {
             // No valid registry at that port.
-            /**/     System.out.println
-/**/        ("RMI registry cannot be located at port "
-        /**/        + RMIPortNum);
-            Registry registry =
+            /**/     System.out.println("RMI registry cannot be located at port " + RMIPortNum);
                     LocateRegistry.createRegistry(RMIPortNum);
-            /**/        System.out.println(
-                    /**/           "RMI registry created at port " + RMIPortNum);
+            /**/        System.out.println("RMI registry created at port " + RMIPortNum);
         }
     }
 
-    private void receive(){
+    private static void receive(){
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket(Utils.MTL_SERVER_PORT);
@@ -64,18 +56,6 @@ public class MtlServer {
             while (true) {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
-
-                String[] data = new String(request.getData()).split(" "); //data = "customerID eventID eventType"
-
-                switch (data[2]){
-                    case Utils.ADD_EVENT:
-                        //OtwDBController.bookEvent(data[0], data[1]);
-                        //controller.addEvent(data[0], data[1], );
-                        break;
-                    case Utils.CANCEL_EVENT :
-                        break;
-                }
-
 
                 //replay back after processing the request
                 DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
@@ -96,7 +76,7 @@ public class MtlServer {
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket();
-           // byte[] message = "Hello".getBytes();
+            // byte[] message = "Hello".getBytes();
             InetAddress aHost = InetAddress.getByName("localhost");
             DatagramPacket request = new DatagramPacket("hello".getBytes(), "Hello".length(), aHost, serverPort);
             aSocket.send(request);
