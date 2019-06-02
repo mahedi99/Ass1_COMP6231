@@ -40,10 +40,11 @@ public class OtwServer {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
-                String[] data = new String(request.getData()).split("\\|");
+                String[] data = new String(request.getData(), request.getOffset(), request.getLength()).split("\\|");
                 String response = "false";
-                TorDBController controller = TorDBController.getInstance();
-                switch (RequestType.valueOf(data[0])) {
+                OtwDBController controller = OtwDBController.getInstance();
+
+                switch (RequestType.valueOf(data[0].trim())) {
                     case ADD_EVENT:
                         response = controller.addEvent(data[1], EventType.valueOf(data[2]), Integer.parseInt(data[3].trim()));
                         break;
@@ -51,10 +52,10 @@ public class OtwServer {
 //                        response = controller.removeEvent(model.getEventID(), model.getEventType());
 //                        break;
                     case LIST_EVENT_AVAILABILITY:
-                        response = controller.listEventAvailability(EventType.valueOf(data[1]));
+                        response = controller.listEventAvailabilityForOthers(EventType.valueOf(data[1].trim()));
                         break;
                     case BOOK_EVENT:
-                        response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3]));
+                        response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3].trim()));
                         break;
 //                    case GET_BOOKING_SCHEDULE:
 //                        response = controller.getBookingSchedule(model.getClientID());

@@ -11,16 +11,16 @@ public class CustomerClient {
 
     public static void main(String[] a){
         try {
-            String registryURL = "rmi://localhost:" + 5000 + "/server";
+            String registryURL = "rmi://localhost:" + 7000 + "/server";
             // find the remote object and cast it to an interface object
             RMIInterface h = (RMIInterface) Naming.lookup(registryURL);
             // invoke the remote method
 
             MessageModel model = new MessageModel();
-            model.setClientID("MTLC2345");
-            model.setEventID("MTLE100519");
+            model.setClientID("OTWC2345");
+            model.setEventID("OTWE100519");
             model.setEventType(EventType.CONFERENCE);
-            model.setRequestType(RequestType.ADD_EVENT);
+            model.setRequestType(RequestType.GET_BOOKING_SCHEDULE);
             model.setBookingCapacity(50);
 
             String message = h.processRequest(model);

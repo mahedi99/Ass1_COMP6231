@@ -5,11 +5,6 @@ import server.database.DB;
 import server.database.EventDetails;
 import server.database.EventType;
 import server.database.RequestType;
-import server.mtl_server.MtlDBController;
-import server.mtl_server.MtlServer;
-import server.tor_server.TorServer;
-
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -119,24 +114,105 @@ public class OtwDBController implements DB {
         service.shutdown();
 
         try {
-            service.awaitTermination(5, TimeUnit.SECONDS);
+            service.awaitTermination(5, TimeUnit.SECONDS); //waits at-most 5 seconds
             response  = otw.get() + tor.get();
+            response = response.replace("|", ", ").trim();
+            response = response.substring(0, response.length() - 1) + ".";
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+        }
+        return response;
+    }
+    public String listEventAvailabilityForOthers(EventType eventType){
+        String response = "";
+        if (database.containsKey(eventType)){
+            ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+            Set<String> keys = allEvents.keySet();
+            for (String tmpKey : keys){
+                EventDetails tmpEvent = allEvents.get(tmpKey);
+                response = response + tmpEvent.eventID + " " + tmpEvent.spaceAvailable() + "|";
+            }
+        }
+        return response;
+    }
+
+    //Also, a customer can book as many events in his/her own
+    //city, but only at most 3 events from other cities overall in a month. (yet to implement)***
+    @Override
+    public String bookEvent(String customerID, String eventID, EventType eventType) {
+        String response = "unsuccessful";
+        if (customerID.substring(3,5).contains("C")){
+            switch (eventID.substring(0, 3)){
+                case "MTL" :
+                    String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
+                    response = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
+                    break;
+                case "TOR" :
+                    String UDPMsg2 = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
+                    response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg2);
+                    break;
+                case "OTW" :
+                    if (database.containsKey(eventType)){
+                        if(database.get(eventType).containsKey(eventID)){
+                            EventDetails event = database.get(eventType).get(eventID);
+                            if ( 0 < event.spaceAvailable()){
+                                if(event.listCustomers.add(customerID)){
+                                    response = customerID + " added to " + eventID + " event.";
+                                }
+                                else {
+                                    response = "Duplicate call for" + eventID + " event";
+                                }
+                            }
+                            else {
+                                response = "Capacity full for " + eventID + " event.";
+                            }
+                        }
+                    }
+
+                    break;
+            }
         }
         return response;
     }
 
     @Override
-    public String bookEvent(String customerID, String eventID, EventType eventType) {
-        return "";
-    }
+    public synchronized String getBookingSchedule(String customerID) {
+        String response;
+        String UDPMsg = RequestType.GET_BOOKING_SCHEDULE + "|" + customerID;
+        response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
+        //response = response + OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
 
-    @Override
-    public String getBookingSchedule(String customerID) {
-        return "";
+        Set<EventType> keys = database.keySet();
+        for (EventType tmpEventTypeKey : keys){
+            Set<String> eventKeys = database.get(tmpEventTypeKey).keySet();
+            for (String tmpEventKey : eventKeys){
+                EventDetails tmpEvent = database.get(tmpEventTypeKey).get(tmpEventKey);
+                if (tmpEvent.listCustomers.contains(customerID)){
+                    response = response + tmpEvent.eventID + "|";
+                }
+            }
+        }
+        return "All events  : " + response;
+    }
+    public String getBookingScheduleForOthers(String customerID){
+        String response = "";
+        Set<EventType> keys = database.keySet();
+        for (EventType tmpEventTypeKey : keys){
+            Set<String> eventKeys = database.get(tmpEventTypeKey).keySet();
+            for (String tmpEventKey : eventKeys){
+                EventDetails tmpEvent = database.get(tmpEventTypeKey).get(tmpEventKey);
+                for (String s : tmpEvent.listCustomers){
+                    System.out.println("Client : "+s);
+                }
+                if (tmpEvent.listCustomers.contains(customerID)){
+                    response = response + tmpEvent.eventID + "|";
+                }
+            }
+        }
+        System.out.println("response : " +response);
+        return response;
     }
 
     @Override
