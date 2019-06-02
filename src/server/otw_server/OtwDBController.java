@@ -25,7 +25,7 @@ public class OtwDBController implements DB {
     }
 
     @Override
-    public String addEvent(String eventID, EventType eventType, int bookingCapacity) {
+    public synchronized String addEvent(String eventID, EventType eventType, int bookingCapacity) {
         String response = "false";
         switch (eventID.substring(0, 3)) {
             case "MTL":
@@ -59,7 +59,7 @@ public class OtwDBController implements DB {
     }
 
     @Override
-    public String removeEvent(String eventID, EventType eventType) {
+    public synchronized String removeEvent(String eventID, EventType eventType) {
         String response = "false";
         switch (eventID.substring(0, 3)) {
             case "OTW":
@@ -76,7 +76,7 @@ public class OtwDBController implements DB {
     }
 
     @Override
-    public String listEventAvailability(EventType eventType) {
+    public synchronized String listEventAvailability(EventType eventType) {
 //        String[] response  = new String[3];
         String response = "false";
 //        Thread mtl = new Thread(() -> {
@@ -125,7 +125,7 @@ public class OtwDBController implements DB {
         }
         return response;
     }
-    public String listEventAvailabilityForOthers(EventType eventType){
+    public synchronized String listEventAvailabilityForOthers(EventType eventType){
         String response = "";
         if (database.containsKey(eventType)){
             ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
@@ -141,7 +141,7 @@ public class OtwDBController implements DB {
     //Also, a customer can book as many events in his/her own
     //city, but only at most 3 events from other cities overall in a month. (yet to implement)***
     @Override
-    public String bookEvent(String customerID, String eventID, EventType eventType) {
+    public synchronized String bookEvent(String customerID, String eventID, EventType eventType) {
         String response = "unsuccessful";
         if (customerID.substring(3,5).contains("C")){
             switch (eventID.substring(0, 3)){
@@ -196,7 +196,7 @@ public class OtwDBController implements DB {
         }
         return "All events  : " + response;
     }
-    public String getBookingScheduleForOthers(String customerID){
+    public synchronized String getBookingScheduleForOthers(String customerID){
         String response = "";
         Set<EventType> keys = database.keySet();
         for (EventType tmpEventTypeKey : keys){
@@ -216,7 +216,7 @@ public class OtwDBController implements DB {
     }
 
     @Override
-    public String cancelEvent(String customerID, String eventID, EventType eventType) {
+    public synchronized String cancelEvent(String customerID, String eventID, EventType eventType) {
         return "";
     }
 

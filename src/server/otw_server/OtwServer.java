@@ -57,9 +57,9 @@ public class OtwServer {
                     case BOOK_EVENT:
                         response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3].trim()));
                         break;
-//                    case GET_BOOKING_SCHEDULE:
-//                        response = controller.getBookingSchedule(model.getClientID());
-//                        break;
+                    case GET_BOOKING_SCHEDULE:
+                        response = controller.getBookingScheduleForOthers(data[1].trim());
+                        break;
 //                    case CANCEL_EVELT:
 //                        response = controller.cancelEvent(model.getClientID(), model.getEventID(), model.getEventType());
 //                        break;
