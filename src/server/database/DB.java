@@ -6,5 +6,5 @@ public interface DB {
     public String listEventAvailability(EventType eventType);
     public String bookEvent(String customerID, String eventID, EventType eventType);
     public String getBookingSchedule(String customerID);
-    public String cancelEvent(String customerID, String eventID);
+    public String cancelEvent(String customerID, String eventID, EventType eventType);
 }

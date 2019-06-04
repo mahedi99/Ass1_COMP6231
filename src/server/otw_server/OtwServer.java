@@ -1,7 +1,8 @@
 package server.otw_server;
 
 import server.Utils;
-import server.rmi.MtlRMIInterfaceImpl;
+import server.database.EventType;
+import server.database.RequestType;
 import server.rmi.OtwRMIInterfaceImpl;
 
 import java.io.IOException;
@@ -10,20 +11,15 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.rmi.Naming;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 public class OtwServer {
     public static void main(String[] args) {
 
-        new Thread(() -> {
-            receive();
-        }).start();
+        new Thread(() -> receive()).start();
 
         try{
             Utils.startRegistry(Utils.OTW_SERVER_PORT);
-            MtlRMIInterfaceImpl exportedObj = new MtlRMIInterfaceImpl();
+            OtwRMIInterfaceImpl exportedObj = new OtwRMIInterfaceImpl();
             String registryURL = "rmi://localhost:" + Utils.OTW_SERVER_PORT + "/server";
             Naming.rebind(registryURL, exportedObj);
             System.out.println("Ottawa Server ready.");
@@ -34,31 +30,42 @@ public class OtwServer {
         }
     }
 
-    private static void startRegistry(int RMIPortNum)
-            throws RemoteException {
-        try {
-            Registry registry = LocateRegistry.getRegistry(RMIPortNum);
-            registry.list();
-        }
-        catch (RemoteException e) {
-            // No valid registry at that port.
-            /**/     System.out.println("RMI registry cannot be located at port " + RMIPortNum);
-                    LocateRegistry.createRegistry(RMIPortNum);
-            /**/        System.out.println("RMI registry created at port " + RMIPortNum);
-        }
-    }
-
     private static void receive(){
         DatagramSocket aSocket = null;
         try {
-            aSocket = new DatagramSocket(Utils.MTL_SERVER_PORT);
+            aSocket = new DatagramSocket(Utils.OTW_SERVER_PORT);
             byte[] buffer = new byte[1000];
             while (true) {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
+                String[] data = new String(request.getData(), request.getOffset(), request.getLength()).split("\\|");
+                String response = "false";
+                OtwDBController controller = OtwDBController.getInstance();
+
+                switch (RequestType.valueOf(data[0].trim())) {
+                    case ADD_EVENT:
+                        response = controller.addEvent(data[1], EventType.valueOf(data[2]), Integer.parseInt(data[3].trim()));
+                        break;
+//                    case REMOVE_EVENT:
+//                        response = controller.removeEvent(model.getEventID(), model.getEventType());
+//                        break;
+                    case LIST_EVENT_AVAILABILITY:
+                        response = controller.listEventAvailabilityForOthers(EventType.valueOf(data[1].trim()));
+                        break;
+                    case BOOK_EVENT:
+                        response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3].trim()));
+                        break;
+                    case GET_BOOKING_SCHEDULE:
+                        response = controller.getBookingScheduleForOthers(data[1].trim());
+                        break;
+                    case CANCEL_EVELT:
+                        response = controller.cancelEvent(data[1].trim(), data[2].trim(), EventType.valueOf(data[3].trim()));
+                        break;
+                }
+
                 //replay back after processing the request
-                DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
+                DatagramPacket reply = new DatagramPacket(response.getBytes(), response.length(), request.getAddress(), request.getPort());
                 aSocket.send(reply);
             }
 
@@ -72,13 +79,13 @@ public class OtwServer {
                 aSocket.close();
         }
     }
-    private static void sendMsg(int serverPort){
+    public static String sendMsg(int serverPort, String UDPMsg){
+        String response = "false";
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket();
-            // byte[] message = "Hello".getBytes();
             InetAddress aHost = InetAddress.getByName("localhost");
-            DatagramPacket request = new DatagramPacket("hello".getBytes(), "Hello".length(), aHost, serverPort);
+            DatagramPacket request = new DatagramPacket(UDPMsg.getBytes(), UDPMsg.length(), aHost, serverPort);
             aSocket.send(request);
             System.out.println("Request message sent from the client to server with port number " + serverPort + " is: "
                     + new String(request.getData()));
@@ -86,8 +93,8 @@ public class OtwServer {
             DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
 
             aSocket.receive(reply);
-            System.out.println("Reply received from the server with port number " + serverPort + " is: "
-                    + new String(reply.getData()));
+            System.out.println("Reply received from the server with port number " + serverPort + " is : " + new String(reply.getData()));
+            response = new String(reply.getData()).trim();
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());
         } catch (IOException e) {
@@ -96,5 +103,6 @@ public class OtwServer {
             if (aSocket != null)
                 aSocket.close();
         }
+        return response;
     }
 }

@@ -48,7 +48,7 @@ public class MtlServer {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
-                String[] data = new String(request.getData()).split("\\|"); //data = "customerID eventID eventType"
+                String[] data = new String(request.getData(), request.getOffset(), request.getLength()).split("\\|"); //data = "customerID eventID eventType"
 
                 switch (RequestType.valueOf(data[2])){
                     case ADD_EVENT:

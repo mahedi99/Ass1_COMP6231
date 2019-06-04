@@ -21,10 +21,10 @@ public class MtlRMIInterfaceImpl extends UnicastRemoteObject implements RMIInter
         String response = "false";
         MtlDBController controller = MtlDBController.getInstance();
         switch (model.getRequestType()) {
-            case ADD_EVENT:
+            case ADD_EVENT :
                 response = controller.addEvent(model.getEventID(), model.getEventType(), model.getBookingCapacity());
                 break;
-            case BOOK_EVENT:
+            case BOOK_EVENT :
                 response = controller.bookEvent(model.getClientID(), model.getEventID(), model.getEventType());
                 break;
         }
