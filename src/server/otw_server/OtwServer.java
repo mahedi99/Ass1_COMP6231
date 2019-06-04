@@ -4,7 +4,6 @@ import server.Utils;
 import server.database.EventType;
 import server.database.RequestType;
 import server.rmi.OtwRMIInterfaceImpl;
-import server.tor_server.TorDBController;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -60,9 +59,9 @@ public class OtwServer {
                     case GET_BOOKING_SCHEDULE:
                         response = controller.getBookingScheduleForOthers(data[1].trim());
                         break;
-//                    case CANCEL_EVELT:
-//                        response = controller.cancelEvent(model.getClientID(), model.getEventID(), model.getEventType());
-//                        break;
+                    case CANCEL_EVELT:
+                        response = controller.cancelEvent(data[1].trim(), data[2].trim(), EventType.valueOf(data[3].trim()));
+                        break;
                 }
 
                 //replay back after processing the request

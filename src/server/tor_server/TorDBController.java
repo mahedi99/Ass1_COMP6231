@@ -163,6 +163,32 @@ public class TorDBController implements DB {
 
     @Override
     public String cancelEvent(String customerID, String eventID, EventType eventType) {
-        return "";
+        String response = "false";
+        switch (eventID.substring(0, 3)) {
+            case "MTL":
+                String UDPMsg = RequestType.CANCEL_EVELT + "|" + customerID + "|" + eventID + "|" + eventType;
+                response = TorServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
+                break;
+            case "OTW":
+                String UDPMsg2 = RequestType.CANCEL_EVELT + "|" + customerID + "|" + eventID + "|" + eventType;
+                response = TorServer.sendMsg(Utils.OTW_SERVER_PORT, UDPMsg2);
+                break;
+            case "TOR":
+                if (database.containsKey(eventType)){
+                    ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+                    Set<String> keys = allEvents.keySet();
+                    for (String tmpKey : keys){
+                        EventDetails tmpEvent = allEvents.get(tmpKey);
+                        if (eventID.equals(tmpEvent.eventID)){
+                            response = "" + allEvents.get(eventID).listCustomers.remove(customerID);
+                            response = (response.contains("true")? "successfully removed!" : "unsuccessful");
+                            break;
+                        }
+                    }
+                }
+
+                break;
+        }
+        return response;
     }
 }

@@ -18,9 +18,9 @@ public class CustomerClient {
 
             MessageModel model = new MessageModel();
             model.setClientID("OTWC2345");
-            model.setEventID("OTWE100519");
+            model.setEventID("TORE100519");
             model.setEventType(EventType.CONFERENCE);
-            model.setRequestType(RequestType.GET_BOOKING_SCHEDULE);
+            model.setRequestType(RequestType.CANCEL_EVELT);
             model.setBookingCapacity(50);
 
             String message = h.processRequest(model);
