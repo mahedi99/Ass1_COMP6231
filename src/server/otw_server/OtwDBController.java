@@ -1,5 +1,6 @@
 package server.otw_server;
 
+import server.LogUtils;
 import server.Utils;
 import server.database.DB;
 import server.database.EventDetails;
@@ -55,6 +56,7 @@ public class OtwDBController implements DB {
                 }
                 break;
         }
+        LogUtils.writeToFile("otw_server.txt", RequestType.ADD_EVENT + " | " + "Event ID : " + eventID + " | " + "Booking Capacity : " + bookingCapacity + "\nResponse : " + response);
         return response;
     }
 
@@ -71,7 +73,7 @@ public class OtwDBController implements DB {
                 }
                 break;
         }
-
+        LogUtils.writeToFile("otw_server.txt", RequestType.REMOVE_EVENT + " | " + "Event ID : " + eventID + "\nResponse : " + response);
         return response;
     }
 
@@ -123,6 +125,7 @@ public class OtwDBController implements DB {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        LogUtils.writeToFile("otw_server.txt", RequestType.LIST_EVENT_AVAILABILITY + "\nResponse : " + response);
         return response;
     }
     public synchronized String listEventAvailabilityForOthers(EventType eventType){
@@ -174,6 +177,7 @@ public class OtwDBController implements DB {
                     break;
             }
         }
+        LogUtils.writeToFile("otw_server.txt", RequestType.BOOK_EVENT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
     }
 
@@ -182,7 +186,7 @@ public class OtwDBController implements DB {
         String response;
         String UDPMsg = RequestType.GET_BOOKING_SCHEDULE + "|" + customerID;
         response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
-        //response = response + OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
+        response = response + OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
 
         Set<EventType> keys = database.keySet();
         for (EventType tmpEventTypeKey : keys){
@@ -194,6 +198,7 @@ public class OtwDBController implements DB {
                 }
             }
         }
+        LogUtils.writeToFile("otw_server.txt", RequestType.GET_BOOKING_SCHEDULE + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return "All events  : " + response;
     }
     public synchronized String getBookingScheduleForOthers(String customerID){
@@ -203,15 +208,12 @@ public class OtwDBController implements DB {
             Set<String> eventKeys = database.get(tmpEventTypeKey).keySet();
             for (String tmpEventKey : eventKeys){
                 EventDetails tmpEvent = database.get(tmpEventTypeKey).get(tmpEventKey);
-                for (String s : tmpEvent.listCustomers){
-                    System.out.println("Client : "+s);
-                }
                 if (tmpEvent.listCustomers.contains(customerID)){
                     response = response + tmpEvent.eventID + "|";
                 }
             }
         }
-        System.out.println("response : " +response);
+        //System.out.println("response : " +response);
         return response;
     }
 
@@ -243,6 +245,7 @@ public class OtwDBController implements DB {
 
                 break;
         }
+        LogUtils.writeToFile("otw_server.txt", RequestType.CANCEL_EVELT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
     }
 

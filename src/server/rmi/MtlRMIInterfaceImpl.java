@@ -14,22 +14,28 @@ public class MtlRMIInterfaceImpl extends UnicastRemoteObject implements RMIInter
 
     @Override
     public String processRequest(MessageModel model) throws RemoteException {
-        System.out.println(model.getClientID());
-        System.out.println(model.getEventType());
-        System.out.println(model.getEventID());
-
         String response = "false";
         MtlDBController controller = MtlDBController.getInstance();
         switch (model.getRequestType()) {
-            case ADD_EVENT :
+            case ADD_EVENT:
                 response = controller.addEvent(model.getEventID(), model.getEventType(), model.getBookingCapacity());
                 break;
-            case BOOK_EVENT :
+            case REMOVE_EVENT:
+                response = controller.removeEvent(model.getEventID(), model.getEventType());
+                break;
+            case LIST_EVENT_AVAILABILITY:
+                response = controller.listEventAvailability(model.getEventType());
+                break;
+            case BOOK_EVENT:
                 response = controller.bookEvent(model.getClientID(), model.getEventID(), model.getEventType());
                 break;
+            case GET_BOOKING_SCHEDULE:
+                response = controller.getBookingSchedule(model.getClientID());
+                break;
+            case CANCEL_EVELT:
+                response = controller.cancelEvent(model.getClientID(), model.getEventID(), model.getEventType());
+                break;
         }
-
-
         return response;
     }
 }

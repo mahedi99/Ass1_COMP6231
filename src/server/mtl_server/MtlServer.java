@@ -1,6 +1,7 @@
 package server.mtl_server;
 
 import server.Utils;
+import server.database.EventType;
 import server.database.RequestType;
 import server.rmi.MtlRMIInterfaceImpl;
 
@@ -14,9 +15,7 @@ public class MtlServer {
 
     public static void main(String[] args) {
 
-        new Thread(() -> {
-            receive();
-        }).start();
+        new Thread(() -> receive()).start();
 
         try{
             Utils.startRegistry(Utils.MTL_SERVER_PORT);
@@ -42,26 +41,39 @@ public class MtlServer {
     private static void receive(){
         DatagramSocket aSocket = null;
         try {
-            aSocket = new DatagramSocket(Utils.MTL_SERVER_PORT +1);
+            aSocket = new DatagramSocket(Utils.MTL_SERVER_PORT);
             byte[] buffer = new byte[1000];
             while (true) {
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
 
-                String[] data = new String(request.getData(), request.getOffset(), request.getLength()).split("\\|"); //data = "customerID eventID eventType"
+                String[] data = new String(request.getData(), request.getOffset(), request.getLength()).split("\\|");
+                String response = "false";
+                MtlDBController controller = MtlDBController.getInstance();
 
-                switch (RequestType.valueOf(data[2])){
+                switch (RequestType.valueOf(data[0].trim())) {
                     case ADD_EVENT:
-                        //OtwDBController.bookEvent(data[0], data[1]);
-                        //controller.addEvent(data[0], data[1], );
+                        response = controller.addEvent(data[1], EventType.valueOf(data[2]), Integer.parseInt(data[3].trim()));
                         break;
-                    case BOOK_EVENT :
+//                    case REMOVE_EVENT:
+//                        response = controller.removeEvent(model.getEventID(), model.getEventType());
+//                        break;
+                    case LIST_EVENT_AVAILABILITY:
+                        response = controller.listEventAvailabilityForOthers(EventType.valueOf(data[1].trim()));
+                        break;
+                    case BOOK_EVENT:
+                        response = controller.bookEvent(data[1], data[2], EventType.valueOf(data[3].trim()));
+                        break;
+                    case GET_BOOKING_SCHEDULE:
+                        response = controller.getBookingScheduleForOthers(data[1].trim());
+                        break;
+                    case CANCEL_EVELT:
+                        response = controller.cancelEvent(data[1].trim(), data[2].trim(), EventType.valueOf(data[3].trim()));
                         break;
                 }
 
-
                 //replay back after processing the request
-                DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(), request.getAddress(), request.getPort());
+                DatagramPacket reply = new DatagramPacket(response.getBytes(), response.length(), request.getAddress(), request.getPort());
                 aSocket.send(reply);
             }
 
@@ -80,7 +92,6 @@ public class MtlServer {
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket();
-           // byte[] message = "Hello".getBytes();
             InetAddress aHost = InetAddress.getByName("localhost");
             DatagramPacket request = new DatagramPacket(UDPMsg.getBytes(), UDPMsg.length(), aHost, serverPort);
             aSocket.send(request);
@@ -90,8 +101,7 @@ public class MtlServer {
             DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
 
             aSocket.receive(reply);
-            System.out.println("Reply received from the server with port number " + serverPort + " is: "
-                    + new String(reply.getData()));
+            System.out.println("Reply received from the server with port number " + serverPort + " is : " + new String(reply.getData()));
             response = new String(reply.getData()).trim();
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());

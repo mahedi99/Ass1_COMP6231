@@ -1,6 +1,6 @@
 package server.tor_server;
 
-import com.sun.corba.se.impl.oa.toa.TOA;
+import server.LogUtils;
 import server.Utils;
 import server.database.DB;
 import server.database.EventDetails;
@@ -9,7 +9,7 @@ import server.database.RequestType;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 public class TorDBController implements DB {
 
@@ -28,49 +28,91 @@ public class TorDBController implements DB {
 
 
     @Override
-    public String addEvent(String eventID, EventType eventType, int bookingCapacity) {
+    public synchronized String addEvent(String eventID, EventType eventType, int bookingCapacity) {
         String response = "false";
-        switch (eventID.substring(0, 3)){
-            case "MTL" :
+        switch (eventID.substring(0, 3)) {
+            case "MTL":
+                String UDPMsg2 = RequestType.ADD_EVENT + "|" + eventID + "|" + eventType + "|" + bookingCapacity;
+                response = TorServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg2);
                 break;
-            case "TOR" :
-//                String UDPMsg = RequestType.ADD_EVENT + "|" + eventID + "|" + eventType + "|" + bookingCapacity;
-//                isSuccessful = MtlServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
-
+            case "OTW":
+                String UDPMsg = RequestType.ADD_EVENT + "|" + eventID + "|" + eventType + "|" + bookingCapacity;
+                response = TorServer.sendMsg(Utils.OTW_SERVER_PORT, UDPMsg);
+                break;
+            case "TOR":
                 EventDetails eventDetails = new EventDetails();
                 eventDetails.bookingCapacity = bookingCapacity;
                 eventDetails.eventID = eventID;
 
-                //ConcurrentHashMap<String, EventDetails> tmpEvent = database.putIfAbsent(eventType, new ConcurrentHashMap<>());
-                if (!database.containsKey(eventType)){
+                if (!database.containsKey(eventType)) {
                     database.put(eventType, new ConcurrentHashMap<>());
                 }
-                //System.out.println(tmpEvent.size());
-                if(!database.get(eventType).containsKey(eventID)){
+                if (!database.get(eventType).containsKey(eventID)) {
                     database.get(eventType).putIfAbsent(eventID, eventDetails);
-                    response =  "true";
-                }
-                else {
+                    response = "true";
+                } else {
                     EventDetails details = database.get(eventType).get(eventID);
                     details.bookingCapacity = bookingCapacity;
                     database.get(eventType).put(eventID, eventDetails);
-                    response = "Event already exists, capacity updated";
+                    response = "Event already exists, capacity updated!";
                 }
                 break;
-            case "OTW" :
-                break;
         }
+        LogUtils.writeToFile("tor_server.txt", RequestType.ADD_EVENT + " | " + "Event ID : " + eventID + " | " + "Booking Capacity : " + bookingCapacity + "\nResponse : " + response);
         return response;
     }
 
     @Override
-    public String removeEvent(String eventID, EventType eventType) {
-        return "";
+    public synchronized String removeEvent(String eventID, EventType eventType) {
+        String response = "false";
+        switch (eventID.substring(0, 3)) {
+            case "TOR":
+                if (database.containsKey(eventType)){
+                    if(database.get(eventType).containsKey(eventID)){
+                        database.get(eventType).remove(eventID);
+                        response = "successfully deleted!";
+                    }
+                }
+                break;
+        }
+        LogUtils.writeToFile("tor_server.txt", RequestType.REMOVE_EVENT + " | " + "Event ID : " + eventID + "\nResponse : " + response);
+        return response;
     }
 
     @Override
-    public String listEventAvailability(EventType eventType) {
-        return "";
+    public synchronized String listEventAvailability(EventType eventType) {
+        String response = "false";
+
+        ExecutorService service = Executors.newFixedThreadPool(3);
+        Future<String> mtl = service.submit(new CalculateEvent(Utils.MTL_SERVER_PORT, eventType));
+        Future<String> otw = service.submit(new CalculateEvent(Utils.OTW_SERVER_PORT, eventType));
+        Future<String> tor = service.submit(() -> {
+            String tmpResponse = "";
+            if (database.containsKey(eventType)) {
+                ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+                Set<String> keys = allEvents.keySet();
+                for (String tmpKey : keys) {
+                    EventDetails tmpEvent = allEvents.get(tmpKey);
+                    tmpResponse = tmpResponse + tmpEvent.eventID + " " + tmpEvent.spaceAvailable() + "|";
+                }
+            }
+            return tmpResponse;
+        });
+
+        service.shutdown();
+
+        try {
+            service.awaitTermination(5, TimeUnit.SECONDS); //waits at-most 5 seconds
+            response  = mtl.get() + otw.get() + tor.get();
+            response = response.replace("|", ", ").trim();
+            response = response.substring(0, response.length() - 1) + ".";
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        LogUtils.writeToFile("tor_server.txt", RequestType.LIST_EVENT_AVAILABILITY + "\nResponse : " + response);
+        return response;
     }
     public String listEventAvailabilityForOthers(EventType eventType){
         String response = "";
@@ -88,8 +130,6 @@ public class TorDBController implements DB {
     public synchronized String bookEvent(String customerID, String eventID, EventType eventType) {
         String response = "unsuccessful";
         if (customerID.substring(3,5).contains("C")){
-
-
             switch (eventID.substring(0, 3)){
                 case "MTL" :
                     String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
@@ -120,6 +160,7 @@ public class TorDBController implements DB {
                     break;
             }
         }
+        LogUtils.writeToFile("tor_server.txt", RequestType.BOOK_EVENT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
     }
 
@@ -140,6 +181,7 @@ public class TorDBController implements DB {
                 }
             }
         }
+        LogUtils.writeToFile("tor_server.txt", RequestType.GET_BOOKING_SCHEDULE + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return "All events  : " + response;
     }
     public String getBookingScheduleForOthers(String customerID){
@@ -149,15 +191,12 @@ public class TorDBController implements DB {
             Set<String> eventKeys = database.get(tmpEventTypeKey).keySet();
             for (String tmpEventKey : eventKeys){
                 EventDetails tmpEvent = database.get(tmpEventTypeKey).get(tmpEventKey);
-                for (String s : tmpEvent.listCustomers){
-                    System.out.println("Client : "+s);
-                }
                 if (tmpEvent.listCustomers.contains(customerID)){
                     response = response + tmpEvent.eventID + "|";
                 }
             }
         }
-        System.out.println("response : " +response);
+        //System.out.println("response : " +response);
         return response;
     }
 
@@ -189,6 +228,24 @@ public class TorDBController implements DB {
 
                 break;
         }
+        LogUtils.writeToFile("tor_server.txt", RequestType.CANCEL_EVELT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
+    }
+
+    class CalculateEvent implements Callable<String> {
+
+        private final int portNum;
+        private final EventType eventType;
+
+        CalculateEvent(int portNum, EventType eventType) {
+            this.portNum = portNum;
+            this.eventType = eventType;
+        }
+
+        @Override
+        public String call() {
+            String UDPMsg = RequestType.LIST_EVENT_AVAILABILITY + "|" + eventType;
+            return TorServer.sendMsg(portNum, UDPMsg);
+        }
     }
 }
