@@ -17,9 +17,6 @@ public class TorServer {
 
     public static void main(String[] args) {
 
-
-
-
         //Establishing connection between servers
         new Thread(() -> {
             receive();
