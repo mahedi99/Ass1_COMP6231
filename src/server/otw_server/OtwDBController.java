@@ -13,6 +13,7 @@ import java.util.concurrent.*;
 public class OtwDBController implements DB {
 
     private static Map<EventType, ConcurrentHashMap<String, EventDetails>> database = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Integer> eventInOtherCitiesMap = new ConcurrentHashMap<>();
 
     private static OtwDBController instance;
     private OtwDBController(){
@@ -47,7 +48,7 @@ public class OtwDBController implements DB {
                 }
                 if (!database.get(eventType).containsKey(eventID)) {
                     database.get(eventType).putIfAbsent(eventID, eventDetails);
-                    response = "true";
+                    response =  "Event "+ eventID + " Added!";
                 } else {
                     EventDetails details = database.get(eventType).get(eventID);
                     details.bookingCapacity = bookingCapacity;
@@ -149,12 +150,44 @@ public class OtwDBController implements DB {
         if (customerID.substring(3,5).contains("C")){
             switch (eventID.substring(0, 3)){
                 case "MTL" :
-                    String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
-                    response = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
+                    String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && eventInOtherCitiesMap.get(tmpKey) < 3)){
+                        String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
+                        response = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
+                        if (response.contains("added")){
+
+                            if (eventInOtherCitiesMap.containsKey(tmpKey)){
+                                int i = eventInOtherCitiesMap.get(tmpKey);
+                                eventInOtherCitiesMap.put(tmpKey, i+1);
+                            }
+                            else{
+                                eventInOtherCitiesMap.put(tmpKey, 1);
+                            }
+                        }
+                    }
+                    else {
+                        response = "You can book at-most 3 events from other cities!";
+                    }
                     break;
                 case "TOR" :
-                    String UDPMsg2 = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
-                    response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg2);
+                    String tmpKey2 = eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && eventInOtherCitiesMap.get(tmpKey2) < 3)){
+                        String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
+                        response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
+                        if (response.contains("added")){
+
+                            if (eventInOtherCitiesMap.containsKey(tmpKey2)){
+                                int i = eventInOtherCitiesMap.get(tmpKey2);
+                                eventInOtherCitiesMap.put(tmpKey2, i+1);
+                            }
+                            else{
+                                eventInOtherCitiesMap.put(tmpKey2, 1);
+                            }
+                        }
+                    }
+                    else {
+                        response = "You can book at-most 3 events from other cities!";
+                    }
                     break;
                 case "OTW" :
                     if (database.containsKey(eventType)){
