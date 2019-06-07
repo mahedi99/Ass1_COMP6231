@@ -1,11 +1,11 @@
 package client;
 
-import server.rmi.RMIInterface;
 import server.database.EventType;
 import server.database.RequestType;
 import java.util.Scanner;
-
+import server.rmi.RMIInterface;
 import java.rmi.Naming;
+
 
 public class CustomerClient {
     private static Scanner sc = new Scanner(System.in);
@@ -16,40 +16,53 @@ public class CustomerClient {
 
 
 
-    public static void main(String[] a){
-
+    public void customerClientRequest(String id){
 
         ClientServerController cccsc = ClientServerController.getInstance();
-        CustomerClient cc = new CustomerClient();
-        System.out.println("enter your id: ");
-        cc.customerClientID = sc.next();
+
+        customerClientID = id;
         System.out.println("enter your request : ");
-        cc.requestType = RequestType.valueOf(sc.next());
-        System.out.println("enter event id: ");
-        cc.eventID = sc.next();
-        System.out.println("enter event type: ");
-        cc.eventType = EventType.valueOf(sc.next()) ;
-        cccsc.makeRmiRequestCustomer(cc.customerClientID, cc.requestType, cc.eventID, cc.eventType);
+        requestType = RequestType.valueOf(sc.next());
 
-        try {
-            String registryURL = "rmi://localhost:" + 7000 + "/server";
-            // find the remote object and cast it to an interface object
-            RMIInterface h = (RMIInterface) Naming.lookup(registryURL);
-            // invoke the remote method
+        if(requestType == RequestType.BOOK_EVENT) {
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
 
+            cccsc.makeRmiRequestCustomerBookEvent(customerClientID, requestType, eventID, eventType);
 
-
-//            model.setClientID("OTWC2345");
-//            model.setEventID("TORE100519");
-//            model.setEventType(EventType.CONFERENCE);
-//            model.setRequestType(RequestType.CANCEL_EVENT);
-//            model.setBookingCapacity(50);
-
-//            String message = h.processRequest(model);
-//            System.out.println(message);
         }
-        catch (Exception e) {
-            System.out.println("Exception in CustomerClient: " + e);
+        else if(requestType == RequestType.GET_BOOKING_SCHEDULE) {
+
+            cccsc.makeRmiRequestCustomerGetBookingSchedule(customerClientID, requestType);
+
         }
+        else if(requestType == RequestType.CANCEL_EVENT) {
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+           cccsc.makeRmiRequestCustomerCancelEvent(customerClientID, requestType, eventID, eventType);
+
+        }
+        else {
+
+            cccsc.makeRmiRequestCustomer(customerClientID, requestType);
+
+        }
+
     }
 }
