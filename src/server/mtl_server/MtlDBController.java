@@ -33,6 +33,7 @@ public class MtlDBController implements DB {
             case "MTL" :
                 EventDetails eventDetails = new EventDetails();
                 eventDetails.bookingCapacity = bookingCapacity;
+                eventDetails.eventID = eventID;
 
                 if (!database.containsKey(eventType)){
                     database.put(eventType, new ConcurrentHashMap<>());
