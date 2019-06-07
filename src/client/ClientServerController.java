@@ -31,13 +31,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -57,7 +57,7 @@ public class ClientServerController {
             e.getStackTrace();
         }
 
-        LogUtils.writeToFile("Manager ID: "+managerID+".txt", " Client ID: "+customerID+" Request: "+request+'|'+" Event ID: "+eventID+"| Event Type: "+eventType);
+        LogUtils.writeToFile("Manager_ID_"+managerID+".txt", " Client_ID_"+customerID+" Request: "+request+'|'+" Event ID: "+eventID+"| Event Type: "+eventType);
 
     }
 
@@ -66,13 +66,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -90,7 +90,7 @@ public class ClientServerController {
             e.getStackTrace();
         }
 
-        LogUtils.writeToFile("Manager ID: "+managerID+".txt","Client ID: "+customerID+".txt"+'|'+" Request: "+request);
+        LogUtils.writeToFile("Manager_ID_"+managerID+".txt","Client_ID_"+customerID+".txt"+'|'+" Request: "+request);
 
     }
 
@@ -99,13 +99,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -125,7 +125,7 @@ public class ClientServerController {
             e.getStackTrace();
         }
 
-        LogUtils.writeToFile("Manager ID: "+managerID+".txt" ,  "Customer ID: "+customerID+" | Event ID: "+eventID+'|'+" Request: "+request+'|'+" Event type: "+eventType);
+        LogUtils.writeToFile("Manager_ID_"+managerID+".txt" ,  "Customer ID: "+customerID+" | Event ID: "+eventID+'|'+" Request: "+request+'|'+" Event type: "+eventType);
 
     }
 
@@ -134,13 +134,13 @@ public class ClientServerController {
         String registryURL="";
         switch (managerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -161,7 +161,7 @@ public class ClientServerController {
         }
 
 
-        LogUtils.writeToFile("Client ID: "+managerID+".txt", " Request type: "+request+'|'+" Event type: "+eventType+'|'+"Event id: "+eventID);
+        LogUtils.writeToFile("Client_ID_"+managerID+".txt", " Request type: "+request+'|'+" Event type: "+eventType+'|'+"Event id: "+eventID);
 
     }
 
@@ -170,13 +170,13 @@ public class ClientServerController {
         String registryURL="";
         switch (managerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -195,7 +195,7 @@ public class ClientServerController {
             e.getStackTrace();
         }
 
-        LogUtils.writeToFile("Client ID: "+managerID+".txt", " Request type: "+request+'|'+" Event type: "+eventType);
+        LogUtils.writeToFile("Client_ID_"+managerID+".txt", " Request type: "+request+'|'+" Event type: "+eventType);
 
     }
 
@@ -204,13 +204,13 @@ public class ClientServerController {
         String registryURL="";
         switch (managerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -231,7 +231,7 @@ public class ClientServerController {
        }
 
 
-       LogUtils.writeToFile("Client ID: "+managerID+".txt", " Request type: "+request+'|'+" Event ID: "+eventID+'|'+" Event type: "+eventType+'|'+" Booking Capacity: "+bookingCapacity);
+       LogUtils.writeToFile("Client_ID_"+managerID+".txt", " Request type: "+request+'|'+" Event ID: "+eventID+'|'+" Event type: "+eventType+'|'+" Booking Capacity: "+bookingCapacity);
 
     }
 
@@ -240,13 +240,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -266,7 +266,7 @@ public class ClientServerController {
                 e.getStackTrace();
             }
 
-            LogUtils.writeToFile("Client ID: "+customerID+".txt", " Event ID: "+eventID+" Request type: "+request+'|'+" Event type: "+eventType);
+            LogUtils.writeToFile("Client_ID_"+customerID+".txt", " Event ID: "+eventID+" Request type: "+request+'|'+" Event type: "+eventType);
 
     }
 
@@ -275,13 +275,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -299,7 +299,7 @@ public class ClientServerController {
                 e.getStackTrace();
             }
 
-            LogUtils.writeToFile("Client ID: "+customerID+".txt"," Request type: "+request );
+            LogUtils.writeToFile("Client_ID_"+customerID+".txt"," Request type: "+request );
 
     }
 
@@ -308,13 +308,13 @@ public class ClientServerController {
         String registryURL="";
         switch (customerID.substring(0,3)){
             case "TOR" :
-                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.TOR_SERVER_PORT+"/server";
                 break;
             case "MTL" :
-                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.MTL_SERVER_PORT+"/server";
                 break;
             case "OTW" :
-                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/sever";
+                registryURL= "rmi://localhost:"+Utils.OTW_SERVER_PORT+"/server";
                 break;
         }
 
@@ -334,14 +334,14 @@ public class ClientServerController {
                 e.getStackTrace();
             }
 
-            LogUtils.writeToFile("Client ID: "+customerID+".txt", " Request type: "+request+" | Event ID: "+eventID+" | Event type: "+eventType);
+            LogUtils.writeToFile("Client_ID_"+customerID+".txt", " Request type: "+request+" | Event ID: "+eventID+" | Event type: "+eventType);
 
     }
 
     public void makeRmiRequestCustomer(String customerID, RequestType request) {
 
         System.out.println("you are not allowed to perform this operation");
-        LogUtils.writeToFile("Client ID: "+customerID+".txt", " Request Type: "+request);
+        LogUtils.writeToFile("Client_ID_"+customerID+".txt", " Request Type: "+request);
 
     }
 }
