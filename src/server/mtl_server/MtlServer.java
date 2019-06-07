@@ -67,7 +67,7 @@ public class MtlServer {
                     case GET_BOOKING_SCHEDULE:
                         response = controller.getBookingScheduleForOthers(data[1].trim());
                         break;
-                    case CANCEL_EVELT:
+                    case CANCEL_EVENT:
                         response = controller.cancelEvent(data[1].trim(), data[2].trim(), EventType.valueOf(data[3].trim()));
                         break;
                 }

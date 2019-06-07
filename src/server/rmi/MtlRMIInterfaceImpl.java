@@ -32,7 +32,7 @@ public class MtlRMIInterfaceImpl extends UnicastRemoteObject implements RMIInter
             case GET_BOOKING_SCHEDULE:
                 response = controller.getBookingSchedule(model.getClientID());
                 break;
-            case CANCEL_EVELT:
+            case CANCEL_EVENT:
                 response = controller.cancelEvent(model.getClientID(), model.getEventID(), model.getEventType());
                 break;
         }

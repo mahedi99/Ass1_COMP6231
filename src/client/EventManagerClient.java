@@ -11,43 +11,112 @@ public class EventManagerClient {
 
     private RequestType requestType;
     private String managerClientID;
+    private String customerClientID;
     private String eventID;
     private EventType eventType;
     private int bookingCapacity;
 
-//    private int portno;
 
-//    public EventManagerClient(){
-//        String managerClientID, String eventID, int portno
-//        this.managerClientID=managerClientID;
-//        this.portno=portno;
-//        EventID=eventID;
-//        mcsc = ClientServerController.getInstance();
-//    }
+    public EventManagerClient() {
 
-//    public String getManagerClientID() {
-//        return managerClientID;
-//    }
+    }
 
-//    public static void requestToController(String request) {
-//        mcsc.makeRmiRequest(managerClientID,EventID, request);
-//    }
-
-    public static void main(String[] args) {
+    public void eventManagerClientRequest(String id) {
 
         ClientServerController emccsc = ClientServerController.getInstance();
-        EventManagerClient emc = new EventManagerClient();
-        System.out.println("enter your id: ");
-        emc.managerClientID = sc.next();
+
+        managerClientID = id;
         System.out.println("enter your request : ");
-        emc.requestType = RequestType.valueOf(sc.next());
-        System.out.println("enter event id: ");
-        emc.eventID = sc.next();
-        System.out.println("enter event type: ");
-        emc.eventType = EventType.valueOf(sc.next()) ;
-        System.out.println("set booking capacity ");
-        emc.bookingCapacity = sc.nextInt();
-        emccsc.makeRmiRequestEventManager(emc.managerClientID, emc.requestType, emc.eventID, emc.eventType, emc.bookingCapacity);
+        requestType = RequestType.valueOf(sc.next());
+
+        if(requestType == RequestType.ADD_EVENT) {
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+
+            System.out.println("set booking capacity ");
+            bookingCapacity = sc.nextInt();
+            emccsc.makeRmiRequestEventManagerAddEvent(managerClientID, requestType, eventID, eventType, bookingCapacity);
+
+        }
+        else if(requestType == RequestType.REMOVE_EVENT) {
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+
+            emccsc.makeRmiRequestEventManagerRemoveEvent(managerClientID, requestType, eventID, eventType);
+
+        }
+        else if(requestType == RequestType.LIST_EVENT_AVAILABILITY) {
+
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+
+            emccsc.makeRmiRequestEventManagerListEventAvailability(managerClientID, requestType, eventType);
+
+        }
+        else if(requestType == RequestType.BOOK_EVENT){
+
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+            System.out.println("enter customer id: ");
+            customerClientID = sc.next();
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+
+            emccsc.makeRmiRequestEventManagerBookEvent(managerClientID, customerClientID, requestType, eventID, eventType);
+
+        }
+        else if(requestType == RequestType.GET_BOOKING_SCHEDULE) {
+            System.out.println("enter customer id: ");
+            customerClientID = sc.next();
+            emccsc.makeRmiRequestEventManagerGetBookingSchedule(managerClientID,customerClientID, requestType);
+
+        }
+        else if(requestType == RequestType.CANCEL_EVENT) {
+            System.out.println("enter event id: ");
+            eventID = sc.next();
+            System.out.println("enter customer id: ");
+            customerClientID = sc.next();
+            while(true) {
+                System.out.println("enter event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+            emccsc.makeRmiRequestEventManagerCancelEvent(managerClientID, customerClientID, requestType, eventID, eventType);
+
+        }
+
 
     }
 

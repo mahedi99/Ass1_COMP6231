@@ -204,11 +204,11 @@ public class MtlDBController implements DB {
         String response = "false";
         switch (eventID.substring(0, 3)) {
             case "OTW":
-                String UDPMsg = RequestType.CANCEL_EVELT + "|" + customerID + "|" + eventID + "|" + eventType;
+                String UDPMsg = RequestType.CANCEL_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                 response = MtlServer.sendMsg(Utils.OTW_SERVER_PORT, UDPMsg);
                 break;
             case "TOR":
-                String UDPMsg2 = RequestType.CANCEL_EVELT + "|" + customerID + "|" + eventID + "|" + eventType;
+                String UDPMsg2 = RequestType.CANCEL_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                 response = MtlServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg2);
                 break;
             case "MTL":
@@ -227,7 +227,7 @@ public class MtlDBController implements DB {
 
                 break;
         }
-        LogUtils.writeToFile("mtl_server.txt", RequestType.CANCEL_EVELT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
+        LogUtils.writeToFile("mtl_server.txt", RequestType.CANCEL_EVENT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
     }
 
