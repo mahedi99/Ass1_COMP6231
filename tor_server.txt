@@ -1,0 +1,12 @@
+13/06/2019 : 02:05:13
+ADD_EVENT | Event ID : TORE1234 | Booking Capacity : 2
+Response : true
+
+13/06/2019 : 02:07:10
+REMOVE_EVENT | Event ID : TORE1234
+Response : successfully deleted!
+
+13/06/2019 : 02:08:27
+BOOK_EVENT | Event ID : TORE1234 | Customer ID : TORC1
+Response : unsuccessful
+
