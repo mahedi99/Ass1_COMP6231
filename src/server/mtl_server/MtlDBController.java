@@ -135,7 +135,7 @@ public class MtlDBController implements DB {
             switch (eventID.substring(0, 3)){
                 case "TOR" :
                     String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && eventInOtherCitiesMap.get(tmpKey) < 3)){
+                    if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && (eventInOtherCitiesMap.get(tmpKey) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = MtlServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
                         if (response.contains("added")){
