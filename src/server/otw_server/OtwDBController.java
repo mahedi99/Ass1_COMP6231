@@ -171,7 +171,7 @@ public class OtwDBController implements DB {
                     break;
                 case "TOR" :
                     String tmpKey2 = eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && eventInOtherCitiesMap.get(tmpKey2) < 3)){
+                    if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
                         if (response.contains("added")){

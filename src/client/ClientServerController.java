@@ -200,7 +200,10 @@ public class ClientServerController {
     }
 
     public void makeRmiRequestEventManagerAddEvent(String managerID, RequestType request, String eventID, EventType eventType, int bookingCapacity ) {
-
+        if (!managerID.substring(0,3).equals(eventID.substring(0,3))){
+            System.out.println("Input Mismatches!");
+            return;
+        }
         String registryURL="";
         switch (managerID.substring(0,3)){
             case "TOR" :
