@@ -170,7 +170,7 @@ public class OtwDBController implements DB {
                     }
                     break;
                 case "TOR" :
-                    String tmpKey2 = eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    String tmpKey2 = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
                     if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
@@ -195,6 +195,7 @@ public class OtwDBController implements DB {
                             EventDetails event = database.get(eventType).get(eventID);
                             if ( 0 < event.spaceAvailable()){
                                 if(event.listCustomers.add(customerID)){
+                                    event.totalBooked ++;
                                     response = customerID + " added to " + eventID + " event.";
                                 }
                                 else {
