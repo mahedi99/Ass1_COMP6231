@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 public class OtwDBController implements DB {
 
     private static Map<EventType, ConcurrentHashMap<String, EventDetails>> database = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String, Integer> eventInOtherCitiesMap = new ConcurrentHashMap<>();
+    //private static ConcurrentHashMap<String, Integer> eventInOtherCitiesMap = new ConcurrentHashMap<>();
 
     private static OtwDBController instance;
     private OtwDBController(){
@@ -148,42 +148,56 @@ public class OtwDBController implements DB {
     public synchronized String bookEvent(String customerID, String eventID, EventType eventType) {
         String response = "unsuccessful";
         if (customerID.substring(3,5).contains("C")){
+
+            String month = eventID.substring(6, eventID.length()).trim();
+            int totalEventsOutside;
+            String UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+            String numberOfEvents = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg1);
+            totalEventsOutside = Integer.parseInt(numberOfEvents);
+            if (totalEventsOutside < 3){
+                UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+                String numberOfEvents2 = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg1);
+                totalEventsOutside += Integer.parseInt(numberOfEvents2);
+            }
+
             switch (eventID.substring(0, 3)){
                 case "MTL" :
-                    String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && (eventInOtherCitiesMap.get(tmpKey) < 3))){
+                    if (totalEventsOutside < 3){
+                    //String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    //if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && (eventInOtherCitiesMap.get(tmpKey) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
-                        if (response.contains("added")){
-
-                            if (eventInOtherCitiesMap.containsKey(tmpKey)){
-                                int i = eventInOtherCitiesMap.get(tmpKey);
-                                eventInOtherCitiesMap.put(tmpKey, i+1);
-                            }
-                            else{
-                                eventInOtherCitiesMap.put(tmpKey, 1);
-                            }
-                        }
+//                        if (response.contains("added")){
+//
+//                            if (eventInOtherCitiesMap.containsKey(tmpKey)){
+//                                int i = eventInOtherCitiesMap.get(tmpKey);
+//                                eventInOtherCitiesMap.put(tmpKey, i+1);
+//                            }
+//                            else{
+//                                eventInOtherCitiesMap.put(tmpKey, 1);
+//                            }
+//                        }
                     }
                     else {
                         response = "You can book at-most 3 events from other cities!";
                     }
                     break;
                 case "TOR" :
-                    String tmpKey2 = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
+                    if (totalEventsOutside < 3){
+                    //String tmpKey2 = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    //if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
-                        if (response.contains("added")){
-
-                            if (eventInOtherCitiesMap.containsKey(tmpKey2)){
-                                int i = eventInOtherCitiesMap.get(tmpKey2);
-                                eventInOtherCitiesMap.put(tmpKey2, i+1);
-                            }
-                            else{
-                                eventInOtherCitiesMap.put(tmpKey2, 1);
-                            }
-                        }
+//                        if (response.contains("added")){
+//
+//                            if (eventInOtherCitiesMap.containsKey(tmpKey2)){
+//                                int i = eventInOtherCitiesMap.get(tmpKey2);
+//                                eventInOtherCitiesMap.put(tmpKey2, i+1);
+//                            }
+//                            else{
+//                                eventInOtherCitiesMap.put(tmpKey2, 1);
+//                            }
+//                        }
                     }
                     else {
                         response = "You can book at-most 3 events from other cities!";
@@ -213,6 +227,23 @@ public class OtwDBController implements DB {
         }
         LogUtils.writeToFile("otw_server.txt", RequestType.BOOK_EVENT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
+    }
+
+
+    public String getEventsForOneMonth(String customerID, String month){
+        int countEvent = 0;
+        Set<EventType> keys = database.keySet();
+        for (EventType tmpEventType : keys){
+            Set<String> eventKeys = database.get(tmpEventType).keySet();
+            for (String tmpEventKey : eventKeys) {
+                EventDetails tmpEvent = database.get(tmpEventType).get(tmpEventKey);
+                String tmpMonth = tmpEvent.eventID.substring(6, tmpEvent.eventID.length()).trim();
+                if (tmpEvent.listCustomers.contains(customerID) && tmpMonth.equals(month)){
+                    countEvent ++;
+                }
+            }
+        }
+        return "" + countEvent;
     }
 
     @Override
