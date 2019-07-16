@@ -342,7 +342,7 @@ public class OtwDBController implements DB {
 		return null;
 	}
 	@Override
-    public String swapEvent(String customerID, String oldEventID, EventType oldEventType, String newEventID, EventType newEventType) {
+    public synchronized String swapEvent(String customerID, String oldEventID, EventType oldEventType, String newEventID, EventType newEventType) {
         String response = "false";
         String isOldEventBooked = "false";
         String isNewEventAvailable = "false";
