@@ -8,7 +8,8 @@ public class MessageModel implements Serializable {
     private EventType eventType;
     private int bookingCapacity;
     private RequestType requestType;
-
+    private String newEventID;
+    private EventType newEventType;
 
 
 
@@ -49,5 +50,19 @@ public class MessageModel implements Serializable {
 
     public void setRequestType(RequestType requestType) {
         this.requestType = requestType;
+    }
+    public String getNewEventID() {
+        return newEventID;
+    }
+    public void setNewEventID(String newEventID) {
+        this.newEventID = newEventID;
+    }
+
+    public EventType getNewEventType() {
+        return newEventType;
+    }
+
+    public void setNewEventType(EventType newEventType) {
+        this.newEventType = newEventType;
     }
 }

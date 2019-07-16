@@ -8,6 +8,11 @@ public class Utils {
     public static final int MTL_SERVER_PORT = 5000;
     public static final int TOR_SERVER_PORT = 6000;
     public static final int OTW_SERVER_PORT = 7000;
+    
+    
+    public static final String MTL_ORB_SERVER = "mtl_orb_server";
+    public static final String OTW_ORB_SERVER = "otw_orb_server";
+    public static final String TOR_ORB_SERVER = "tor_orb_server";
 
     public static void startRegistry(int RMIPortNum)
             throws RemoteException {

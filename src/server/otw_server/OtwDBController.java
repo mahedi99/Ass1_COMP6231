@@ -6,6 +6,7 @@ import server.database.DB;
 import server.database.EventDetails;
 import server.database.EventType;
 import server.database.RequestType;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -99,7 +100,7 @@ public class OtwDBController implements DB {
 //        }
 
         ExecutorService service = Executors.newFixedThreadPool(3);
-        //Future<String> mtl = service.submit(new CalculateEvent(Utils.MTL_SERVER_PORT, eventType));
+        Future<String> mtl = service.submit(new CalculateEvent(Utils.MTL_SERVER_PORT, eventType));
         Future<String> tor = service.submit(new CalculateEvent(Utils.TOR_SERVER_PORT, eventType));
         Future<String> otw = service.submit(() -> {
             String tmpResponse = "";
@@ -118,7 +119,7 @@ public class OtwDBController implements DB {
 
         try {
             service.awaitTermination(5, TimeUnit.SECONDS); //waits at-most 5 seconds
-            response  = otw.get() + tor.get();
+            response  = mtl.get() + otw.get() + tor.get();
             response = response.replace("|", ", ").trim();
             response = response.substring(0, response.length() - 1) + ".";
         } catch (InterruptedException e) {
@@ -142,48 +143,51 @@ public class OtwDBController implements DB {
         return response;
     }
 
-    //Also, a customer can book as many events in his/her own
+  //Also, a customer can book as many events in his/her own
     //city, but only at most 3 events from other cities overall in a month. (yet to implement)***
     @Override
     public synchronized String bookEvent(String customerID, String eventID, EventType eventType) {
         String response = "unsuccessful";
         if (customerID.substring(3,5).contains("C")){
+
             switch (eventID.substring(0, 3)){
                 case "MTL" :
-                    String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && (eventInOtherCitiesMap.get(tmpKey) < 3))){
+                    if (getTotalEventsOutside(customerID, eventID) < 3){
+                    //String tmpKey = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    //if (!eventInOtherCitiesMap.containsKey(tmpKey) || (eventInOtherCitiesMap.containsKey(tmpKey) && (eventInOtherCitiesMap.get(tmpKey) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg);
-                        if (response.contains("added")){
-
-                            if (eventInOtherCitiesMap.containsKey(tmpKey)){
-                                int i = eventInOtherCitiesMap.get(tmpKey);
-                                eventInOtherCitiesMap.put(tmpKey, i+1);
-                            }
-                            else{
-                                eventInOtherCitiesMap.put(tmpKey, 1);
-                            }
-                        }
+//                        if (response.contains("added")){
+//
+//                            if (eventInOtherCitiesMap.containsKey(tmpKey)){
+//                                int i = eventInOtherCitiesMap.get(tmpKey);
+//                                eventInOtherCitiesMap.put(tmpKey, i+1);
+//                            }
+//                            else{
+//                                eventInOtherCitiesMap.put(tmpKey, 1);
+//                            }
+//                        }
                     }
                     else {
                         response = "You can book at-most 3 events from other cities!";
                     }
                     break;
                 case "TOR" :
-                    String tmpKey2 = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
-                    if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
+                    if (getTotalEventsOutside(customerID, eventID) < 3){
+                    //String tmpKey2 = customerID + eventID.substring(6, eventID.length()).trim(); //tmpKey represents the month+year : 0519
+                    //if (!eventInOtherCitiesMap.containsKey(tmpKey2) || (eventInOtherCitiesMap.containsKey(tmpKey2) && (eventInOtherCitiesMap.get(tmpKey2) < 3))){
                         String UDPMsg = RequestType.BOOK_EVENT + "|" + customerID + "|" + eventID + "|" + eventType;
                         response = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg);
-                        if (response.contains("added")){
-
-                            if (eventInOtherCitiesMap.containsKey(tmpKey2)){
-                                int i = eventInOtherCitiesMap.get(tmpKey2);
-                                eventInOtherCitiesMap.put(tmpKey2, i+1);
-                            }
-                            else{
-                                eventInOtherCitiesMap.put(tmpKey2, 1);
-                            }
-                        }
+//                        if (response.contains("added")){
+//
+//                            if (eventInOtherCitiesMap.containsKey(tmpKey2)){
+//                                int i = eventInOtherCitiesMap.get(tmpKey2);
+//                                eventInOtherCitiesMap.put(tmpKey2, i+1);
+//                            }
+//                            else{
+//                                eventInOtherCitiesMap.put(tmpKey2, 1);
+//                            }
+//                        }
                     }
                     else {
                         response = "You can book at-most 3 events from other cities!";
@@ -213,6 +217,37 @@ public class OtwDBController implements DB {
         }
         LogUtils.writeToFile("otw_server.txt", RequestType.BOOK_EVENT + " | " + "Event ID : " + eventID + " | " + "Customer ID : " + customerID + "\nResponse : " + response);
         return response;
+    }
+
+
+    public String getEventsForOneMonth(String customerID, String month){
+        int countEvent = 0;
+        Set<EventType> keys = database.keySet();
+        for (EventType tmpEventType : keys){
+            Set<String> eventKeys = database.get(tmpEventType).keySet();
+            for (String tmpEventKey : eventKeys) {
+                EventDetails tmpEvent = database.get(tmpEventType).get(tmpEventKey);
+                String tmpMonth = tmpEvent.eventID.substring(6, tmpEvent.eventID.length()).trim();
+                if (tmpEvent.listCustomers.contains(customerID) && tmpMonth.equals(month)){
+                    countEvent ++;
+                }
+            }
+        }
+        return "" + countEvent;
+    }
+
+    private int getTotalEventsOutside(String customerID, String eventID){
+        String month = eventID.substring(6, eventID.length()).trim();
+        int totalEventsOutside;
+        String UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+        String numberOfEvents = OtwServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg1);
+        totalEventsOutside = Integer.parseInt(numberOfEvents);
+        if (totalEventsOutside < 3){
+            UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+            String numberOfEvents2 = OtwServer.sendMsg(Utils.TOR_SERVER_PORT, UDPMsg1);
+            totalEventsOutside += Integer.parseInt(numberOfEvents2);
+        }
+        return totalEventsOutside;
     }
 
     @Override
@@ -270,6 +305,7 @@ public class OtwDBController implements DB {
                     for (String tmpKey : keys){
                         EventDetails tmpEvent = allEvents.get(tmpKey);
                         if (eventID.equals(tmpEvent.eventID)){
+                        	allEvents.get(eventID).totalBooked --;
                             response = "" + allEvents.get(eventID).listCustomers.remove(customerID);
                             response = (response.contains("true")? "successfully removed!" : "unsuccessful");
                             break;
@@ -297,6 +333,184 @@ public class OtwDBController implements DB {
         public String call() {
             String UDPMsg = RequestType.LIST_EVENT_AVAILABILITY + "|" + eventType;
             return OtwServer.sendMsg(portNum, UDPMsg);
+        }
+    }
+
+	public String swapEvent(String customerID, String newEventID, String oldEventID, EventType newEventType,
+			EventType oldEventType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+    public String swapEvent(String customerID, String oldEventID, EventType oldEventType, String newEventID, EventType newEventType) {
+        String response = "false";
+        String isOldEventBooked = "false";
+        String isNewEventAvailable = "false";
+
+        ExecutorService service = Executors.newFixedThreadPool(5);
+
+        //check if oldEvent was booked before
+        Future<String> mtlOld = null, mtlNew = null, otwOld = null, otwNew = null, torOld = null, torNew = null;
+        switch (oldEventID.substring(0, 3)) {
+            case "MTL":
+                mtlOld = service.submit(new MakeSwapRequest(Utils.MTL_SERVER_PORT, customerID, oldEventID, oldEventType, RequestType.CHECK_IS_REGISTERED));
+                break;
+            case "TOR":
+                torOld = service.submit(new MakeSwapRequest(Utils.TOR_SERVER_PORT, customerID, oldEventID, oldEventType, RequestType.CHECK_IS_REGISTERED));
+                break;
+            case "OTW":
+                otwOld = service.submit(() -> {
+                    String tmpResult = "false";
+                    if (database.containsKey(oldEventType)) {
+                        ConcurrentHashMap<String, EventDetails> allEvents = database.get(oldEventType);
+                        if (allEvents.containsKey(oldEventID)){
+                            EventDetails tmpEvent = allEvents.get(oldEventID);
+                            if (tmpEvent.listCustomers.contains(customerID)){
+                                tmpResult = "true";
+                            }
+                        }
+                    }
+                    return tmpResult;
+                });
+                break;
+        }
+
+        switch (newEventID.substring(0, 3)) {
+            case "MTL":
+                mtlNew = service.submit(new MakeSwapRequest(Utils.MTL_SERVER_PORT, customerID, newEventID, newEventType, RequestType.CHECK_CAPACITY));
+                break;
+            case "TOR":
+                torNew = service.submit(new MakeSwapRequest(Utils.TOR_SERVER_PORT, customerID, newEventID, newEventType, RequestType.CHECK_CAPACITY));
+                break;
+            case "OTW":
+                otwNew = service.submit(() -> {
+                    String tmpResult = "false";
+                    if (database.containsKey(newEventType)) {
+                        ConcurrentHashMap<String, EventDetails> allEvents = database.get(newEventType);
+                        if (allEvents.containsKey(newEventID)){
+                            EventDetails tmpEvent = allEvents.get(newEventID);
+                                if (tmpEvent.spaceAvailable() > 0){
+                                    tmpResult = "true";
+                                }
+                            
+                        }
+                    }
+                    return tmpResult;
+                });
+                break;
+        }
+
+        service.shutdown();
+        try {
+            service.awaitTermination(5, TimeUnit.SECONDS); //waits at-most 5 seconds
+            switch (oldEventID.substring(0, 3)){
+                case "MTL" :
+                    isOldEventBooked  = mtlOld.get();
+                    break;
+                case "OTW" :
+                    isOldEventBooked = otwOld.get();
+                    break;
+                case "TOR" :
+                    isOldEventBooked = torOld.get();
+                    break;
+            }
+            switch (newEventID.substring(0, 3)){
+                case "MTL" :
+                    isNewEventAvailable  = mtlNew.get();
+                    break;
+                case "OTW" :
+                    isNewEventAvailable = otwNew.get();
+                    break;
+                case "TOR" :
+                    isNewEventAvailable = torNew.get();
+                    break;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (isOldEventBooked.contains("true") && isNewEventAvailable.contains("true")){
+//            String month = newEventID.substring(6, newEventID.length()).trim();
+//            int totalEventsOutside;
+//            String UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+//            String numberOfEvents = TorServer.sendMsg(Utils.MTL_SERVER_PORT, UDPMsg1);
+//            totalEventsOutside = Integer.parseInt(numberOfEvents);
+//            if (totalEventsOutside < 3){
+//                UDPMsg1 = RequestType.GET_TOTAL_EVENTS + "|" + customerID + "|" + month;
+//                String numberOfEvents2 = TorServer.sendMsg(Utils.OTW_SERVER_PORT, UDPMsg1);
+//                totalEventsOutside += Integer.parseInt(numberOfEvents2);
+//            }
+//
+//            if (totalEventsOutside < 3){
+//                //cancel event and book event
+//                service = Executors.newFixedThreadPool(2);
+//            }
+
+            String bookResponse = bookEvent(customerID, newEventID, newEventType);
+            if (bookResponse.contains("added")){
+                String cancelResponse = cancelEvent(customerID, oldEventID, oldEventType);
+                if (cancelResponse.contains("successfully")){
+                    response = "Swap Successful!";
+                }
+            }
+        }
+        else {
+            response = "Either no capacity or event was not booked!";
+        }
+
+        return response;
+    }
+
+    public String getIsTheUserRegistered(String customerID, String eventID, EventType eventType){
+        String response = "false";
+        if (database.containsKey(eventType)) {
+            ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+            if (allEvents.containsKey(eventID)){
+                EventDetails tmpEvent = allEvents.get(eventID);
+                if (tmpEvent.listCustomers.contains(customerID)){
+                    response = "true";
+                }
+            }
+        }
+        return response;
+    }
+    public String checkCapacityForTheEvent(String customerID, String eventID, EventType eventType) {
+    	String tmpResult = "false";
+        if (database.containsKey(eventType)) {
+            ConcurrentHashMap<String, EventDetails> allEvents = database.get(eventType);
+            if (allEvents.containsKey(eventID)){
+                EventDetails tmpEvent = allEvents.get(eventID);
+                    if (tmpEvent.spaceAvailable() > 0){
+                        tmpResult = "true";
+                    }
+                
+            }
+        }
+        return tmpResult;
+    }
+    
+
+    class MakeSwapRequest implements Callable<String> {
+
+        private EventType eventType;
+        private String eventID;
+        private String customerID;
+        private int portNumber;
+        private RequestType reqType;
+
+        public MakeSwapRequest(int portNumber, String customerID, String eventID, EventType eventType, RequestType reqType){
+            this.portNumber = portNumber;
+            this.customerID = customerID;
+            this.eventID = eventID;
+            this.eventType = eventType;
+            this.reqType = reqType;
+        }
+        @Override
+        public String call(){
+            String UDPMsg = reqType + "|" + customerID + "|" + eventID + "|" + eventType;
+            return OtwServer.sendMsg(portNumber, UDPMsg);
         }
     }
 }

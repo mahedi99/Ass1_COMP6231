@@ -18,6 +18,7 @@ public class MtlServer {
         new Thread(() -> receive()).start();
 
         try{
+        	
             Utils.startRegistry(Utils.MTL_SERVER_PORT);
             MtlRMIInterfaceImpl exportedObj = new MtlRMIInterfaceImpl();
             String registryURL = "rmi://localhost:" + Utils.MTL_SERVER_PORT + "/server";
