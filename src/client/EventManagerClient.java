@@ -15,6 +15,9 @@ public class EventManagerClient {
     private String eventID;
     private EventType eventType;
     private int bookingCapacity;
+    private String newEventID;
+    private EventType newEventType;
+    
 
 
     public EventManagerClient() {
@@ -114,6 +117,36 @@ public class EventManagerClient {
                     System.out.println("event type is not valid");
             }
             emccsc.makeRmiRequestEventManagerCancelEvent(managerClientID, customerClientID, requestType, eventID, eventType);
+
+        }
+        else if(requestType == RequestType.SWAP_EVENT){
+
+            System.out.println("NEW enter event id: ");
+            newEventID = sc.next();
+            
+            while(true) {
+                System.out.println("NEW event type: ");
+                newEventType = EventType.valueOf(sc.next()) ;
+                if(newEventType == EventType.CONFERENCE || newEventType == EventType.SEMINAR || newEventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+            
+            System.out.println("OLD enter event id: ");
+            eventID = sc.next();
+            while(true) {
+                System.out.println("OLD event type: ");
+                eventType = EventType.valueOf(sc.next()) ;
+                if(eventType == EventType.CONFERENCE || eventType == EventType.SEMINAR || eventType== EventType.TRADE_SHOW)
+                    break;
+                else
+                    System.out.println("event type is not valid");
+            }
+            System.out.println("enter customer id: ");
+            customerClientID = sc.next();
+
+            emccsc.makeRmiRequestEventManagerSwapEvent(managerClientID, customerClientID, newEventID, newEventType, eventID, eventType, requestType);
 
         }
 

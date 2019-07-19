@@ -238,6 +238,10 @@ public class ClientServerController {
 				+ eventID + '|' + " Event type: " + eventType + '|' + " Booking Capacity: " + bookingCapacity);
 
 	}
+	
+	
+
+
 
 	public void makeRmiRequestCustomerCancelEvent(String customerID, RequestType request, String eventID,
 			EventType eventType) {
@@ -342,6 +346,35 @@ public class ClientServerController {
 	}
 	
 	public void makeRmiRequestCustomerSwapEvent(String customerID, String newEventID, EventType newEventType, String oldEventID, EventType oldEventType, RequestType requestType) {
+        String registryURL="";
+        switch (customerID.substring(0, 3)) {
+		case "TOR":
+			registryURL = Utils.TOR_ORB_SERVER;
+			break;
+		case "MTL":
+			registryURL = Utils.MTL_ORB_SERVER;
+			break;
+		case "OTW":
+			registryURL = Utils.OTW_ORB_SERVER;
+			break;
+		}
+
+        try{
+        	String[] args = null;
+			ORB orb = ORB.init(args, null);
+			objRef = orb.resolve_initial_references("NameService");
+			ncRef = NamingContextExtHelper.narrow(objRef);
+			corbaInterface = CORBAInterfaceHelper.narrow(ncRef.resolve_str(registryURL));
+			String name = corbaInterface.processRequest(customerID, oldEventID, String.valueOf(oldEventType), 0, String.valueOf(requestType), newEventID, String.valueOf(newEventType));
+			System.out.println(name);
+
+        }catch(Exception e){
+            e.getStackTrace();
+        }
+
+    }
+	
+	public void makeRmiRequestEventManagerSwapEvent(String managerID, String customerID, String newEventID, EventType newEventType, String oldEventID, EventType oldEventType, RequestType requestType) {
         String registryURL="";
         switch (customerID.substring(0, 3)) {
 		case "TOR":
